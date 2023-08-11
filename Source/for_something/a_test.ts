@@ -1,7 +1,7 @@
-// Copyright (c) Dolittle. All rights reserved.
+// Copyright (c) woksin-org. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {describeThis} from '@dolittle/typescript.testing';
+import {describeThis} from '@woksin/typescript.testing';
 
 describeThis(__filename, () => {
     it('should be true', () => true.should.be.true);

@@ -1,4 +1,4 @@
-name: Github JavaScript Actions CI/CD
+name: Release GithubAction as semantic tags
 
 on:
   release:
@@ -16,10 +16,9 @@ jobs:
       with:
         node-version: 16.x
     - name: Release GitHub Action
-      uses: technote-space/release-github-actions@v6
+      uses: technote-space/release-github-actions@v8
       with:
         CLEAN_TARGETS: Source,*.ts,*.js,*.json,*.lock,.[!.]*,Tests,Documentation,node_modules,Distribution
         TEST_TAG_PREFIX: test/
         ORIGINAL_TAG_PREFIX: original/
         CLEAN_TEST_TAG: true
-
