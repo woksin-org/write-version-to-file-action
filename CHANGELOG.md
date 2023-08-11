@@ -1,3 +1,15 @@
+# [3.0.0] - 2023-8-11[PR: #1](https://github.com/woksin-org/write-version-to-file-action/pull/1)
+## Summary
+
+### Changed
+
+- user email and user name is no longer required
+
+### Removed
+
+- `merge-strategy` input. Default to merge
+
+
 # [2.1.2] - 2022-12-7 [PR: #21](https://github.com/dolittle/write-version-to-file-action/pull/21)
 ## Summary
 
