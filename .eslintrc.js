@@ -1,8 +1,8 @@
-// Copyright (c) Dolittle. All rights reserved.
+// Copyright (c) woksin-org. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 module.exports = {
-    extends: '@dolittle',
+    extends: '@woksin',
     rules: {
         '@typescript-eslint/unified-signatures': 'off',
         'import/no-extraneous-dependencies': 'off',
@@ -12,7 +12,7 @@ module.exports = {
             2,
             'line',
             [
-                ' Copyright (c) Dolittle. All rights reserved.',
+                ' Copyright (c) woksin-org. All rights reserved.',
                 ' Licensed under the MIT license. See LICENSE file in the project root for full license information.',
             ],
             2

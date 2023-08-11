@@ -1,4 +1,4 @@
-// Copyright (c) Dolittle. All rights reserved.
+// Copyright (c) woksin-org. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import * as core from '@actions/core';
@@ -6,7 +6,7 @@ import * as github from '@actions/github';
 import { exec } from '@actions/exec';
 import path from 'path';
 import editJsonFile from 'edit-json-file';
-import { Logger } from '@dolittle/github-actions.shared.logging';
+import { Logger } from '@woksin/github-actions.shared.logging';
 
 const logger = new Logger();
 
@@ -19,9 +19,8 @@ export async function run() {
         const version = core.getInput('version', { required: true });
         const path = core.getInput('path', { required: true });
 
-        const userEmail = core.getInput('user-email', { required: false }) || 'build@dolittle.com';
+        const userEmail = core.getInput('user-email', { required: false }) || 'build@woksin.com';
         const userName = core.getInput('user-name', { required: false }) || 'dolittle-build';
-        const mergeStrategy = core.getInput('merge-strategy', { required: false }) || 'merge';
 
         const commitSHA = github.context.sha;
         const buildDate = new Date().toISOString();
@@ -34,7 +33,7 @@ export async function run() {
 
         updateVersionFile(path, version, commitSHA, buildDate);
         await configureUser(userEmail, userName);
-        await configurePull(mergeStrategy);
+        await configurePull();
         await commitVersionFile(path, version, userEmail, userName);
         await pushChanges();
 
@@ -94,45 +93,14 @@ async function configureUser(userEmail: string, userName: string) {
         { ignoreReturnCode: true });
 }
 
-async function configurePull(mergeStrategy: string) {
-    logger.info(`Configure git pull as '${mergeStrategy}'`);
-    switch (mergeStrategy) {
-        case 'rebase':
-            await exec(
-                'git config',
-                [
-                    'pull.rebase',
-                    'true'
-                ]
-            );
-            break;
-        case 'fast-forward':
-            await exec(
-                'git config',
-                [
-                    'pull.ff',
-                    'only'
-                ]
-            );
-            break;
-        case 'merge':
-            await exec(
-                'git config',
-                [
-                    'pull.rebase',
-                    'false'
-                ]
-            );
-            break;
-        default:
-            await exec(
-                'git config',
-                [
-                    'pull.rebase',
-                    'false'
-                ]
-            );
-    }
+async function configurePull() {
+    await exec(
+        'git config',
+        [
+            'pull.rebase',
+            'false'
+        ]
+    );
 }
 
 async function pushChanges() {
