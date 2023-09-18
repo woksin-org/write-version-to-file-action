@@ -7,6 +7,7 @@ import { exec } from '@actions/exec';
 import path from 'path';
 import editJsonFile from 'edit-json-file';
 import { Logger } from '@woksin/github-actions.shared.logging';
+import { safeCommitAndPush } from '@woksin/github-actions.shared.git';
 
 const logger = new Logger();
 
@@ -17,25 +18,28 @@ run();
 export async function run() {
     try {
         const version = core.getInput('version', { required: true });
-        const path = core.getInput('path', { required: true });
+        const versionFilePath = core.getInput('path', { required: true });
 
-        const userEmail = core.getInput('user-email', { required: false }) || 'build@woksin.com';
-        const userName = core.getInput('user-name', { required: false }) || 'dolittle-build';
+        const userEmail = core.getInput('user-email', { required: false });
+        const userName = core.getInput('user-name', { required: false });
 
         const commitSHA = github.context.sha;
         const buildDate = new Date().toISOString();
 
         logger.info('Writing build version information to file');
-        logger.info(`\tPath : ${path}`);
+        logger.info(`\tPath : ${versionFilePath}`);
         logger.info(`\tVersion: ${version}`);
         logger.info(`\tCommit: ${commitSHA}`);
         logger.info(`\tBuilt: ${buildDate}`);
 
-        updateVersionFile(path, version, commitSHA, buildDate);
-        await configureUser(userEmail, userName);
-        await configurePull();
-        await commitVersionFile(path, version, userEmail, userName);
-        await pushChanges();
+        updateVersionFile(versionFilePath, version, commitSHA, buildDate);
+        await safeCommitAndPush(logger, {
+            userEmail,
+            userName,
+            branch: path.basename(github.context.ref),
+            files: [versionFilePath],
+            commitMessage: `Update to ${version} in version file`
+        });
 
     } catch (error: any) {
         logger.info(`Error : ${error}`);
@@ -55,57 +59,4 @@ function updateVersionFile(filePath: string, version: string, commitSHA: string,
     file.set('commit', commitSHA);
     file.set('built', buildDate);
     file.save();
-}
-
-async function commitVersionFile(filePath: string, version: string, userEmail: string, userName: string) {
-    logger.info(`Adding and committing ${filePath}`);
-    await exec('git add', [filePath]);
-    await exec(
-        'git commit',
-        [
-            `-m "Update to ${version} in version file"`
-        ],
-        {
-            env: {
-                GIT_AUTHOR_NAME: userName,
-                GIT_AUTHOR_EMAIL: userEmail,
-                GIT_COMMITTER_NAME: userName,
-                GIT_COMMITTER_EMAIL: userEmail,
-            },
-        });
-}
-
-async function configureUser(userEmail: string, userName: string) {
-    logger.info(`Configuring user with email '${userEmail}' and name '${userName}'`);
-    await exec(
-        'git config',
-        [
-            'user.email',
-            `"${userEmail}"`
-        ],
-        { ignoreReturnCode: true });
-    await exec(
-        'git config',
-        [
-            'user.name',
-            `"${userName}"`
-        ],
-        { ignoreReturnCode: true });
-}
-
-async function configurePull() {
-    await exec(
-        'git config',
-        [
-            'pull.rebase',
-            'false'
-        ]
-    );
-}
-
-async function pushChanges() {
-    const branchName = path.basename(github.context.ref);
-    logger.info(`Pushing changelog to origin ${branchName}`);
-    await exec('git pull origin', [branchName]);
-    await exec('git push origin', [branchName]);
 }
